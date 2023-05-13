@@ -120,3 +120,198 @@ resource "aws_route_table_association" "lington_Private_RT2" {
   subnet_id      = aws_subnet.lington-priv2.id
   route_table_id = aws_route_table.lington_RT_Pri_SN.id
 }
+# Create keypair with Terraform
+resource "tls_private_key" "lington_Key" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+
+resource "local_file" "lington_Key_priv" {
+  filename        = "lington_key.pem"
+  content         = tls_private_key.lington_Key.private_key_pem
+  file_permission = "600"
+}
+
+resource "aws_key_pair" "lington_Key_pub" {
+  key_name   = "lington_key"
+  public_key = tls_private_key.lington_Key.public_key_openssh
+}
+
+# Creating Security group ansible(FrontEnd)
+resource "aws_security_group" "ansible_lington_FrontEndSG" {
+  name        = "lington Ansible"
+  description = "Ansible traffic"
+  vpc_id      = aws_vpc.lington-vpc.id
+
+  ingress {
+    description = "SSH rule VPC"
+    from_port   = var.SSH
+    to_port     = var.SSH
+    protocol    = "tcp"
+    cidr_blocks = var.allow_all_IP
+  }
+
+
+  egress {
+    from_port   = var.egress_from_and_to
+    to_port     = var.egress_from_and_to
+    protocol    = var.egress_protocol
+    cidr_blocks = var.allow_all_IP
+  }
+
+  tags = {
+    Name = "lington_Ansible"
+  }
+}
+
+# Creating Security group Jenkin(FrontEnd)
+resource "aws_security_group" "Jenkin_lington_FrontEndSG" {
+  name        = "lington Jenkin"
+  description = "Jenkins traffic"
+  vpc_id      = aws_vpc.lington-vpc.id
+
+  ingress {
+    description = "SSH rule VPC"
+    from_port   = var.SSH
+    to_port     = var.SSH
+    protocol    = "tcp"
+    cidr_blocks = var.allow_all_IP
+  }
+
+  ingress {
+    description = "Jenkins port"
+    from_port   = var.Jenkin
+    to_port     = var.Jenkin
+    protocol    = "tcp"
+    cidr_blocks = var.allow_all_IP
+  }
+
+  egress {
+    from_port   = var.egress_from_and_to
+    to_port     = var.egress_from_and_to
+    protocol    = var.egress_protocol
+    cidr_blocks = var.allow_all_IP
+  }
+
+  tags = {
+    Name = "lington_Jenkin"
+  }
+}
+
+# Creating Security group bastion(FrontEnd)
+resource "aws_security_group" "bastion_lington_FrontEndSG" {
+  name        = "lington bastion"
+  description = "bastion traffic"
+  vpc_id      = aws_vpc.lington-vpc.id
+
+  ingress {
+    description = "SSH rule VPC"
+    from_port   = var.SSH
+    to_port     = var.SSH
+    protocol    = "tcp"
+    cidr_blocks = var.allow_all_IP
+  }
+
+
+  egress {
+    from_port   = var.egress_from_and_to
+    to_port     = var.egress_from_and_to
+    protocol    = var.egress_protocol
+    cidr_blocks = var.allow_all_IP
+  }
+
+  tags = {
+    Name = "lington_bastion"
+  }
+}
+
+# Creating Security group sonarQube(FrontEnd)
+resource "aws_security_group" "sonarQube_lington_FrontEndSG" {
+  name        = "lington sonarQube"
+  description = "sonarqube traffic"
+  vpc_id      = aws_vpc.lington-vpc.id
+
+  ingress {
+    description = "SSH rule VPC"
+    from_port   = var.SSH
+    to_port     = var.SSH
+    protocol    = "tcp"
+    cidr_blocks = var.allow_all_IP
+  }
+
+  ingress {
+    description = "SonarQube rule VPC"
+    from_port   = var.SonarQube
+    to_port     = var.SonarQube
+    protocol    = "tcp"
+    cidr_blocks = var.allow_all_IP
+  }
+
+
+  egress {
+    from_port   = var.egress_from_and_to
+    to_port     = var.egress_from_and_to
+    protocol    = var.egress_protocol
+    cidr_blocks = var.allow_all_IP
+  }
+
+  tags = {
+    Name = "lington_solarQube"
+  }
+}
+
+# Creating Security group docker stage(BackEnd)
+resource "aws_security_group" "docker_stage_lington_BackEndSG" {
+  name        = "lington docker prod"
+  description = "docker stage traffic"
+  vpc_id      = aws_vpc.lington-vpc.id
+
+  ingress {
+    description     = "SSH rule VPC"
+    from_port       = var.SSH
+    to_port         = var.SSH
+    protocol        = "tcp"
+    security_groups = [aws_security_group.ansible_lington_FrontEndSG.id, aws_security_group.bastion_lington_FrontEndSG.id]
+  }
+
+
+
+  egress {
+    from_port   = var.egress_from_and_to
+    to_port     = var.egress_from_and_to
+    protocol    = var.egress_protocol
+    cidr_blocks = var.allow_all_IP
+  }
+
+  tags = {
+    Name = "lington_docker_stage"
+  }
+}
+
+# Creating Security group docker production(BackEnd)
+resource "aws_security_group" "docker_prod_lington_BackEndSG" {
+  name        = "lington docker production"
+  description = "docker production traffic"
+  vpc_id      = aws_vpc.lington-vpc.id
+
+  ingress {
+    description     = "SSH rule VPC"
+    from_port       = var.SSH
+    to_port         = var.SSH
+    protocol        = "tcp"
+    security_groups = [aws_security_group.ansible_lington_FrontEndSG.id, aws_security_group.bastion_lington_FrontEndSG.id]
+  }
+
+
+
+  egress {
+    from_port   = var.egress_from_and_to
+    to_port     = var.egress_from_and_to
+    protocol    = var.egress_protocol
+    cidr_blocks = var.allow_all_IP
+  }
+
+  tags = {
+    Name = "lington_docker_prod"
+  }
+}

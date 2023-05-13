@@ -27,3 +27,30 @@ variable "aws_priv2" {
 variable "all_ip" {
   default = "0.0.0.0/0"
 }
+# ssh port
+variable "SSH" {
+  default = 22
+}
+
+# allow all traffic from every IP addres
+variable "allow_all_IP" {
+  default = ["0.0.0.0/0"]
+}
+
+# Jenkins port
+variable "Jenkin" {
+  default = 8080
+}
+
+variable "egress_from_and_to" {
+  default = 0
+}
+
+variable "egress_protocol" {
+  default = "-1"
+}
+
+# sonarQube port
+variable "SonarQube" {
+  default = 9000
+}
