@@ -315,3 +315,109 @@ resource "aws_security_group" "docker_prod_lington_BackEndSG" {
     Name = "lington_docker_prod"
   }
 }
+
+#PROVISIONING BASTION HOST(JUMP BOX)
+resource "aws_instance" "Bastion_Server" {
+  ami                         = "ami-08d9bb4bfe39be5c2" #redhat #London
+  instance_type               = "t2.micro"
+  associate_public_ip_address = true
+  key_name                    = aws_key_pair.lington_Key_pub.key_name
+  subnet_id                   = aws_subnet.lington-pub1.id
+  vpc_security_group_ids      = [aws_security_group.bastion_lington_FrontEndSG.id]
+  user_data = local.bastion_user_data
+
+
+
+  tags = {
+    Name = "Bastion-server"
+  }
+}
+
+#PROVISIONING DOCKER SERVERS FOR STAGING AND PRODUCTION
+resource "aws_instance" "docker_stage_Server" {
+  ami                    = var.AMI-ubuntu
+  instance_type          = "t2.micro"
+  key_name               = aws_key_pair.lington_Key_pub.key_name
+  subnet_id              = aws_subnet.lington-priv1.id
+  vpc_security_group_ids = [aws_security_group.docker_stage_lington_BackEndSG.id]
+  user_data              = local.user_data_docker_stage
+
+
+  tags = {
+    Name = "docker-stage-server"
+  }
+}
+
+data "aws_instance" "docker_stage_Server" {
+  filter {
+    name   = "tag:Name"
+    values = ["docker-stage-server"]
+  }
+  depends_on = [aws_instance.docker_stage_Server]
+}
+
+resource "aws_instance" "docker_prod_Server" {
+  ami                    = var.AMI-ubuntu
+  instance_type          = "t2.micro"
+  key_name               = aws_key_pair.lington_Key_pub.key_name
+  subnet_id              = aws_subnet.lington-priv1.id
+  vpc_security_group_ids = [aws_security_group.docker_prod_lington_BackEndSG.id]
+  user_data              = local.user_data_docker_prod
+
+
+  tags = {
+    Name = "docker-prod-server"
+  }
+}
+
+data "aws_instance" "docker_prod_Server" {
+  filter {
+    name   = "tag:Name"
+    values = ["docker-prod-server"]
+  }
+  depends_on = [aws_instance.docker_prod_Server]
+}
+
+resource "aws_instance" "sonarqude_server" {
+  ami                         = var.AMI-ubuntu
+  instance_type               = var.instance_type
+  associate_public_ip_address = true
+  key_name                    = aws_key_pair.lington_Key_pub.key_name
+  subnet_id                   = aws_subnet.lington-pub1.id
+  vpc_security_group_ids = [aws_security_group.sonarQube_lington_FrontEndSG.id]
+  user_data              = local.sonarqube_user_data
+
+  tags = {
+    Name = "Sonarqube-server"
+  }
+}
+
+#Create Ansible Server
+resource "aws_instance" "Ansible_Server" {
+  ami                         = var.AMI-ubuntu
+  instance_type               = var.instance_type
+  key_name                    = aws_key_pair.lington_Key_pub.key_name
+  subnet_id                   = aws_subnet.lington-pub1.id
+  associate_public_ip_address = true
+  vpc_security_group_ids      = [aws_security_group.ansible_lington_FrontEndSG.id]
+  user_data                   = local.ansible_ubuntu_user_data
+
+  tags = {
+    Name = "Ansible_Server"
+  }
+}
+
+#Create a Jenkins Server
+resource "aws_instance" "Jenkins_Server" {
+  ami                         = var.ami-redhat #Redhat
+  instance_type               = var.instance_type
+  associate_public_ip_address = true
+  key_name                    = aws_key_pair.lington_Key_pub.key_name
+  subnet_id                   = aws_subnet.lington-pub1.id
+  vpc_security_group_ids      = [aws_security_group.Jenkin_lington_FrontEndSG.id]
+  user_data                   = local.jenkins_user_data
+
+  tags = {
+    Name = "Jenkins_Server"
+  }
+}
