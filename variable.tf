@@ -54,3 +54,17 @@ variable "egress_protocol" {
 variable "SonarQube" {
   default = 9000
 }
+# Docker AMI which ubuntun and london eu-west 2 region
+variable "AMI-ubuntu" {
+  default = "ami-09744628bed84e434"
+}
+
+# AMI which redhat and london eu-west 2 region
+variable "ami-redhat" {
+  default = "ami-08d9bb4bfe39be5c2"
+}
+
+#instance type
+variable "instance_type" {
+  default = "t2.medium"
+}
