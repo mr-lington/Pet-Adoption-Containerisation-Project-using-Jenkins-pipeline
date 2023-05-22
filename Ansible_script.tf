@@ -42,7 +42,7 @@ cat <<EOT>> /opt/docker/docker_image.yaml
    tasks:
    - name: login  to our docker hub account
      command: docker login --username=lington --password=@Darboy123
-     #command: docker login -u lington -p @@sgfsgsDajsrboy123   this is command to login
+     
 
    - name: create/build docker image from our Dockerfile   
      command: docker build -t lington-docker-image .
@@ -50,13 +50,13 @@ cat <<EOT>> /opt/docker/docker_image.yaml
       chdir: /opt/docker
 
    - name: create docker tag before we push our image to docker hub
-     command: docker tag lington-docker-image super/lington-docker-image
+     command: docker tag super-docker-image lington/super-docker-image
 
    - name: push to docker hub
-     command: docker push super/lington-docker-image
+     command: docker push lington/super-docker-image
 
    - name: remove docker image after pushing
-     command: docker rmi super/lington-docker-image lington-docker-image
+     command: docker rmi lington/super-docker-image super-docker-image
      ignore_errors: yes
 EOT
 
@@ -70,25 +70,25 @@ cat <<EOT>> /opt/docker/docker_stage.yaml
    tasks:
    - name: login  to our docker hub account
      command: docker login --username=lington --password=@Darboy123
-     #command: docker login -u lington -p @@sgfsgsDajsrboy123   this is command to login
+    
    
    - name: lets assume that our container is already running so we need to stop it
-     command: docker stop lington-docker-container
+     command: docker stop test-docker-container
      ignore_errors: yes
 
    - name: remove docker stopped docker container
-     command: docker rm lington-docker-container
+     command: docker rm test-docker-container
      ignore_errors: yes
 
    - name: remove the docker image after pushing
-     command: docker rmi super/lington-docker-image lington-docker-image
+     command: docker rmi lington/super-docker-image lington-docker-image
      ignore_errors: yes
 
    - name: pull docker image from docker hub account
-     command: docker pull super/lington-docker-image
+     command: docker pull lington/super-docker-image
 
    - name: Create docker container for stage from the image we pulled from dockerhub
-     command: docker run -itd  --name lington-docker-container -p 8080:8085 super/lington-docker-image
+     command: docker run -itd  --name test-docker-container -p 8080:8085 lington/super-docker-image
 EOT
 
 touch /opt/docker/docker_prod.yaml
@@ -101,25 +101,25 @@ cat <<EOT>> /opt/docker/docker_prod.yaml
    tasks:
    - name: login  to our docker hub account
      command: docker login --username=lington --password=@Darboy123
-     #command: docker login -u lington -p @@sgfsgsDajsrboy123   this is command to login
+     
    
    - name: lets assume that our container is already running so we need to stop it
-     command: docker stop lington-docker-container
+     command: docker stop test-docker-container
      ignore_errors: yes
 
    - name: remove docker stopped docker container
-     command: docker rm lington-docker-container
+     command: docker rm test-docker-container
      ignore_errors: yes
 
    - name: remove the docker image after pushing
-     command: docker rmi super/lington-docker-image lington-docker-image
+     command: docker rmi lington/super-docker-image lington-docker-image
      ignore_errors: yes
 
    - name: pull docker image from docker hub account
-     command: docker pull super/lington-docker-image
+     command: docker pull lington/super-docker-image
 
    - name: Create docker container for stage from the image we pulled from dockerhub
-     command: docker run -itd  --name lington-docker-container -p 8080:8085 super/lington-docker-image
+     command: docker run -itd  --name test-docker-container -p 8080:8085 lington/super-docker-image
 EOT
 EOF
 }

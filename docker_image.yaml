@@ -1,0 +1,30 @@
+touch /opt/docker/docker_image.yaml
+cat <<EOT>> /opt/docker/docker_image.yaml
+---
+ - name: ansible playbook for docker image
+   hosts: localhost
+   become: true
+
+   tasks:
+   - name: login  to our docker hub account
+     command: docker login --username=lington --password=@Darboy123
+     #command: docker login -u lington -p @@sgfsgsDajsrboy123   this is command to login
+
+   - name: create/build docker image from our Dockerfile   
+     command: docker build -t super-docker-image .
+     args:
+      chdir: /opt/docker
+
+   - name: create docker tag before we push our image to docker hub
+     command: docker tag super-docker-image lington/super-docker-image
+     # when you are giving tag to your docker image make you use your docker hub username as the tag
+
+   - name: push to docker hub
+     command: docker push lington/super-docker-image
+
+   - name: remove docker image after pushing
+     command: docker rmi lington/super-docker-image super-docker-image
+     ignore_errors: yes
+EOT
+
+# going inside ansible user data

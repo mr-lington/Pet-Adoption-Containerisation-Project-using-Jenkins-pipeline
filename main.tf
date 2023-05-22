@@ -262,7 +262,7 @@ resource "aws_security_group" "sonarQube_lington_FrontEndSG" {
 
 # Creating Security group docker stage(BackEnd)
 resource "aws_security_group" "docker_stage_lington_BackEndSG" {
-  name        = "lington docker prod"
+  name        = "lington docker stage"
   description = "docker stage traffic"
   vpc_id      = aws_vpc.lington-vpc.id
 

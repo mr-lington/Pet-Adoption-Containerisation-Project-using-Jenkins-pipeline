@@ -1,0 +1,30 @@
+touch /opt/docker/docker_prod.yaml
+cat <<EOT>> /opt/docker/docker_prod.yaml
+---
+ - name: this is a ansible playbook for docker prod for production environment
+   hosts: docker_prod
+   become: true
+
+   tasks:
+   - name: login  to our docker hub account
+     command: docker login --username=lington --password=@Darboy123
+     #command: docker login -u lington -p @@sgfsgsDajsrboy123   this is command to login
+   
+   - name: lets assume that our container is already running so we need to stop it
+     command: docker stop test-docker-container
+     ignore_errors: yes
+
+   - name: remove docker stopped docker container
+     command: docker rm test-docker-container
+     ignore_errors: yes
+
+   - name: remove the docker image after pushing
+     command: docker rmi lington/super-docker-image lington-docker-image
+     ignore_errors: yes
+
+   - name: pull docker image from docker hub account
+     command: docker pull lington/super-docker-image
+
+   - name: Create docker container for stage from the image we pulled from dockerhub
+     command: docker run -itd  --name test-docker-container -p 8080:8085 lington/super-docker-image
+EOT
