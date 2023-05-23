@@ -38,7 +38,7 @@ pipeline {
         stage('Send Artifacts to Ansible server'){
             steps{
                 sshagent(['jenkins-ansible']) {
-                    sh 'scp -o StrictHostKeyChecking=no /var/lib/jenkins/workspace/set14-client/target/spring-petclinic-2.4.2.war ubuntu@3.8.177.87:/opt/docker'
+                    sh 'scp -o StrictHostKeyChecking=no /var/lib/jenkins/workspace/set14-client/target/spring-petclinic-2.4.2.war ubuntu@35.177.198.131:/opt/docker'
                 }
             }
         } 
@@ -46,7 +46,7 @@ pipeline {
         stage('Trigger Stage Playbook'){
             steps{
                 sshagent(['jenkins-ansible']) {
-                   sh 'ssh -o StrictHostKeyChecking=no ubuntu@3.8.177.87 "ansible-playbook -i /etc/ansible/hosts /opt/docker/docker_image.yaml && ansible-playbook -i /etc/ansible/hosts /opt/docker/docker_stage.yaml"'  
+                   sh 'ssh -o StrictHostKeyChecking=no ubuntu@35.177.198.131 "ansible-playbook -i /etc/ansible/hosts /opt/docker/docker_image.yaml && ansible-playbook -i /etc/ansible/hosts /opt/docker/docker_stage.yaml"'  
                 }
             }
         } 
@@ -57,7 +57,7 @@ pipeline {
                 }
                 steps{
                 sshagent(['jenkins-ansible']) {
-                   sh 'ssh -o StrictHostKeyChecking=no ubuntu@3.8.177.87 "ansible-playbook -i /etc/ansible/hosts /opt/docker/docker_prod.yaml"' 
+                   sh 'ssh -o StrictHostKeyChecking=no ubuntu@35.177.198.131 "ansible-playbook -i /etc/ansible/hosts /opt/docker/docker_prod.yaml"' 
                 }
             }
         } 
