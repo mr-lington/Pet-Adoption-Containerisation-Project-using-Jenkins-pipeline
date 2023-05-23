@@ -10,6 +10,12 @@ sudo apt install docker.io -y
 sudo mkdir /opt/docker
 sudo chown -R ubuntu:ubuntu /opt/docker
 sudo chmod -R 700 /opt/docker
+sudo apt install unzip -y
+sudo apt install curl -y
+curl -O https://download.newrelic.com/newrelic/java-agent/newrelic-agent/current/newrelic-java.zip
+sudo cp newrelic-java.zip /opt/docker
+sudo unzip newrelic-java.zip
+sudo rm newrelic-java.zip
 sudo chmod -R 700 /home/ubuntu/.ssh
 sudo chmod 700 /home/ubuntu/.ssh/authorized_keys
 sudo chown -R ubuntu:ubuntu /home/ubuntu/.ssh
@@ -28,8 +34,12 @@ touch /opt/docker/Dockerfile
 cat <<EOT>> /opt/docker/Dockerfile
 FROM openjdk
 COPY spring-petclinic-2.4.2.war app/
-WORKDIR app
-ENTRYPOINT ["java", "-jar", "spring-petclinic-2.4.2.war", "--server.port=8085"] 
+COPY ./newrelic/newrelic.jar  app/
+COPY ./newrelic/newrelic.yml  app/ 
+ENV NEW_RELIC_APP_NAME="lington-application"
+ENV NEW_RELIC_LICENSE_KEY="eu01xx824af7624c2e9de117fe224214d200NRAL"
+ENV NEW_RELIC_LOG_FILE_NAME="STDOUT"
+ENTRYPOINT ["java","-javaagent:/app/newrelic.jar","-jar","/app/spring-petclinic-2.4.2.war", "--server.port=8085"] 
 EOT
 
 touch /opt/docker/docker_image.yaml
@@ -45,7 +55,7 @@ cat <<EOT>> /opt/docker/docker_image.yaml
      
 
    - name: create/build docker image from our Dockerfile   
-     command: docker build -t lington-docker-image .
+     command: docker build -t super-docker-image .
      args:
       chdir: /opt/docker
 
