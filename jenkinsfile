@@ -1,7 +1,7 @@
 pipeline {
     agent any 
     tools {
-        maven 'set14-maven'
+        maven 'lington-maven'
     } 
 
     stages {
@@ -15,7 +15,7 @@ pipeline {
 
         stage('CODE ANALYSIS'){
             steps{
-                withSonarQubeEnv('set14-sonar'){
+                withSonarQubeEnv('lington-sonar'){
                     sh 'mvn sonar:sonar -Dsonar.java.binaries=target/classes'
                 }
             } 
@@ -24,7 +24,7 @@ pipeline {
         stage('code quality approval'){
             steps{
                 waitForQualityGate abortPipeline: true,
-                credentialsId: 'set14-sonar'
+                credentialsId: 'lington-sonar'
             }
         } 
 
@@ -38,7 +38,7 @@ pipeline {
         stage('Send Artifacts to Ansible server'){
             steps{
                 sshagent(['jenkins-ansible']) {
-                    sh 'scp -o StrictHostKeyChecking=no /var/lib/jenkins/workspace/set14-client/target/spring-petclinic-2.4.2.war ubuntu@35.177.198.131:/opt/docker'
+                    sh 'scp -o StrictHostKeyChecking=no /var/lib/jenkins/workspace/lington-client/target/spring-petclinic-2.4.2.war ubuntu@35.177.198.131:/opt/docker'
                 }
             }
         } 
