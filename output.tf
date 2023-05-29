@@ -22,3 +22,14 @@ output "Jenkins_Server_public_IP" {
   value = aws_instance.Jenkins_Server.public_ip
 }
 
+output "docker_stage_ALB_dns_name" {
+  value = aws_lb.lington_docker_stage_ALB.dns_name
+}
+
+output "docker_prod_ALB_dns_name" {
+  value = aws_lb.lington_docker_prod_ALB.dns_name
+}
+
+output "route53-nameservers" {
+  value = data.aws_route53_zone.petadopt_hosted_zone.name_servers
+} 

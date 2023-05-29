@@ -14,7 +14,7 @@ sudo apt install unzip -y
 sudo apt install curl -y
 curl -O https://download.newrelic.com/newrelic/java-agent/newrelic-agent/current/newrelic-java.zip
 sudo cp newrelic-java.zip /opt/docker
-sudo unzip newrelic-java.zip
+sudo unzip /opt/docker/newrelic-java.zip -d /opt/docker
 sudo rm newrelic-java.zip
 sudo chmod -R 700 /home/ubuntu/.ssh
 sudo chmod 700 /home/ubuntu/.ssh/authorized_keys

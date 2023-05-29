@@ -68,3 +68,29 @@ variable "ami-redhat" {
 variable "instance_type" {
   default = "t2.medium"
 }
+
+# ALB ingress application traffic for docker
+variable "app_port" {
+  default = 8080
+}
+
+# ALB ingress listener traffic for docker
+variable "listener_port" {
+  default = "80"
+}
+
+# ALB ingress listener traffic for docker for ingree stage SG
+variable "unsecured_listener_port" {
+  default = 80
+}
+
+# ALB ingress listener traffic for docker for ingree Prod SG
+variable "secured_listener_port" {
+  default = 443
+}
+
+# DOMAIN NAME
+variable "domain_name" {
+  default = "greatestshalomventures.com"
+}
+
