@@ -50,8 +50,8 @@ resource "aws_security_group" "docker_prod_ALB_SG" {
 
   ingress {
     description = "listener traffic"
-    from_port   = var.unsecured_listener_port
-    to_port     = var.unsecured_listener_port
+    from_port   = var.secured_listener_port
+    to_port     = var.secured_listener_port
     protocol    = "tcp"
     cidr_blocks = var.allow_all_IP
   }
@@ -111,7 +111,7 @@ resource "aws_lb" "lington_docker_stage_ALB" {
 #Create Stage Load Balancer Listener
 resource "aws_lb_listener" "lington_docker_stage_ALB_listener" {
   load_balancer_arn = aws_lb.lington_docker_stage_ALB.arn
-  port              = var.listener_port
+  port              = 80
   protocol          = "HTTP"
 
   default_action {
@@ -163,8 +163,10 @@ resource "aws_lb" "lington_docker_prod_ALB" {
 #Create production Load Balancer Listener
 resource "aws_lb_listener" "lington_docker_prod_ALB_listener" {
   load_balancer_arn = aws_lb.lington_docker_prod_ALB.arn
-  port              = var.listener_port
-  protocol          = "HTTP"
+  port              = 443
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  certificate_arn   = aws_acm_certificate.petadopt-cert.arn
 
   default_action {
     type             = "forward"
@@ -187,91 +189,56 @@ resource "aws_ami_from_instance" "lington_docker_prod_AMI_image" {
   }
 }
 
-# # # # Create launch configuration
-# # # resource "aws_launch_configuration" "lington_docker_prod_lconfig" {
-# # #   name_prefix                          = "lington-lt"
-# # #   image_id                             = aws_ami_from_instance.lington_docker_prod_AMI_image.id
-# # #   instance_type                        = "t2.micro"
-# # #   key_name                             = aws_key_pair.lington_Key_pub.key_name
-# # #   associate_public_ip_address          = false
-# # #   security_groups                      = [aws_security_group.docker_prod_lington_BackEndSG.id]
-# # #   user_data                            = local.user_data_ASG
-# # #   #user_data                            = filebase64("${path.module}/asgolu.sh")
+# Create launch configuration
+resource "aws_launch_configuration" "lington_docker_prod_lconfig" {
+  name_prefix                          = "lington-lt"
+  image_id                             = aws_ami_from_instance.lington_docker_prod_AMI_image.id
+  instance_type                        = "t2.micro"
+  key_name                             = aws_key_pair.lington_Key_pub.key_name
+  associate_public_ip_address          = false
+  security_groups                      = [aws_security_group.docker_prod_lington_BackEndSG.id]
+  user_data                            = local.user_data_ASG
+  #user_data                            = filebase64("${path.module}/asgolu.sh")
   
-# # #   /* monitoring {
-# # #     enabled = true
-# # #   } */
+  /* monitoring {
+    enabled = true
+  } */
  
-# # #   lifecycle {
-# # #     create_before_destroy = false
-# # #   }
-# # # }
+  lifecycle {
+    create_before_destroy = false
+  }
+}
 
-# # # # Creating Auto Scaling Group
-# # # resource "aws_autoscaling_group" "lington_docker_prod_ASG" {
-# # #   name                      = "lington-docker-prod-ASG"
-# # #   max_size                  = 5
-# # #   min_size                  = 2
-# # #   health_check_grace_period = 240
-# # #   health_check_type         = "EC2"
-# # #   desired_capacity          = 3
-# # #   force_delete              = true
-# # #   vpc_zone_identifier       = [aws_subnet.lington-pub1.id, aws_subnet.lington-pub2.id]
-# # #   target_group_arns         = [aws_lb_target_group.lington_docker_prod_ALB_TG.arn]
-# # #   launch_configuration      = aws_launch_configuration.lington_docker_prod_lconfig.id
+# Creating Auto Scaling Group
+resource "aws_autoscaling_group" "lington_docker_prod_ASG" {
+  name                      = "lington-docker-prod-ASG"
+  max_size                  = 5
+  min_size                  = 2
+  health_check_grace_period = 240
+  health_check_type         = "EC2"
+  desired_capacity          = 3
+  force_delete              = true
+  vpc_zone_identifier       = [aws_subnet.lington-pub1.id, aws_subnet.lington-pub2.id]
+  target_group_arns         = [aws_lb_target_group.lington_docker_prod_ALB_TG.arn]
+  launch_configuration      = aws_launch_configuration.lington_docker_prod_lconfig.id
 
-# # #   tag {
-# # #     key                 = "Name"
-# # #     value               = "lington_docker_prod_ASG + 1"
-# # #     propagate_at_launch = true
-# # #   }
-# # # }
+  tag {
+    key                 = "Name"
+    value               = "lington_docker_prod_ASG + 1"
+    propagate_at_launch = true
+  }
+}
 
-# # # # Creating ASG Policy
-# # # resource "aws_autoscaling_policy" "Team1-ASG-Policy" {
-# # #   autoscaling_group_name = aws_autoscaling_group.lington_docker_prod_ASG.name
-# # #   name                   = "lington-docker-prod-ASG-policy"
-# # #   policy_type            = "TargetTrackingScaling"
+# Creating ASG Policy
+resource "aws_autoscaling_policy" "lington-ASG-Policy" {
+  autoscaling_group_name = aws_autoscaling_group.lington_docker_prod_ASG.name
+  name                   = "lington-docker-prod-ASG-policy"
+  policy_type            = "TargetTrackingScaling"
 
-# # #   target_tracking_configuration {
-# # #     predefined_metric_specification {
-# # #       predefined_metric_type = "ASGAverageCPUUtilization"
-# # #     }
-# # #     target_value = 60.0
-# # #   }
-# # # }
-
-# # Create launch template
-# resource "aws_launch_template" "lington_docker_prod_launch_template" {
-#   name_prefix   = "lington-docker-prod-launch-template"
-#   image_id      = aws_ami_from_instance.lington_docker_prod_AMI_image.id
-#   instance_type = "t2.micro"
-#   key_name                             = aws_key_pair.lington_Key_pub.key_name
-#   user_data = local.user_data_ASG
-# }
-
-# resource "aws_autoscaling_group" "lington_docker_prod_ASG" {
-#   vpc_zone_identifier = [aws_subnet.lington-pub1.id, aws_subnet.lington-pub2.id]
-#   desired_capacity   = 3
-#   max_size           = 5
-#   min_size           = 2
-
-#   launch_template {
-#     id      = aws_launch_template.lington_docker_prod_launch_template.id
-#     version = "$Latest"
-#   }
-# }
-
-# # Creating ASG Policy
-# resource "aws_autoscaling_policy" "Team1-ASG-Policy" {
-#   autoscaling_group_name = aws_autoscaling_group.lington_docker_prod_ASG.name
-#   name                   = "lington-docker-prod-ASG-policy"
-#   policy_type            = "TargetTrackingScaling"
-
-#   target_tracking_configuration {
-#     predefined_metric_specification {
-#       predefined_metric_type = "ASGAverageCPUUtilization"
-#     }
-#     target_value = 60.0
-#   }
-# }
+  target_tracking_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ASGAverageCPUUtilization"
+    }
+    target_value = 60.0
+  }
+}

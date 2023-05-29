@@ -84,7 +84,13 @@ variable "unsecured_listener_port" {
   default = 80
 }
 
-# # ALB ingress listener traffic for docker for ingree Prod SG
-# variable "secured_listener_port" {
-#   default = 443
-# }
+# ALB ingress listener traffic for docker for ingree Prod SG
+variable "secured_listener_port" {
+  default = 443
+}
+
+# DOMAIN NAME
+variable "domain_name" {
+  default = "greatestshalomventures.com"
+}
+
